@@ -75,7 +75,7 @@ def create_tables(Conference,
             record_to_insert = (BridgeUniqueid, BridgeName, Conference, timenow, TimeEnd, state_conference)
             # print(record_to_insert)
             cursor.execute(postgres_insert_query, record_to_insert)
-            # print(cursor.execute)
+
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
