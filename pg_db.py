@@ -3,26 +3,6 @@ from config_db import config
 from time import gmtime, strftime
 
 
-def connect():
-    conn = None
-    try:
-        params = config()
-        print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(**params)
-
-        with conn.cursor() as cursor:
-            conn.autocommit = True
-            insert = cursor.execute("INSERT INTO users (id, nikname, firstname, lastname, email, psw, time) VALUES  ('8', 'ALA3', 'Almaty2', 'Kazakhstan2', 'ALA2', 'Almaty2', '2015')")
-            print(insert)
-
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-    finally:
-        if conn is not None:
-            conn.close()
-            print('Database connection closed.')
-
-
 def create_tables(Conference,
                   BridgeUniqueid,
                   BridgeName,
@@ -71,11 +51,8 @@ def create_tables(Conference,
                                      f"TimeCreate = excluded.TimeCreate, "
                                      f"TimeEnd = excluded.TimeEnd")
 
-            # print(postgres_insert_query)
             record_to_insert = (BridgeUniqueid, BridgeName, Conference, timenow, TimeEnd, state_conference)
-            # print(record_to_insert)
             cursor.execute(postgres_insert_query, record_to_insert)
-
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -105,7 +82,10 @@ def join_participants(BridgeUniqueid,
         conn = psycopg2.connect(**params)
         with conn.cursor() as cursor:
             conn.autocommit = True
-            postgres_insert_query = (f"INSERT INTO conf_{BridgeName} (Channel, CallerIDNum, CallerIDName, ConfbridgeTalking, TimeStart, TimeEnd, Admin) VALUES (%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (Channel) DO UPDATE SET ConfbridgeTalking = excluded.ConfbridgeTalking, TimeEnd = excluded.TimeEnd, Admin = excluded.Admin")
+            postgres_insert_query = (f"INSERT INTO conf_{BridgeName} (Channel, CallerIDNum, CallerIDName, "
+                                     f"ConfbridgeTalking, TimeStart, TimeEnd, Admin) VALUES (%s,%s,%s,%s,%s,%s,"
+                                     f"%s) ON CONFLICT (Channel) DO UPDATE SET ConfbridgeTalking = "
+                                     f"excluded.ConfbridgeTalking, TimeEnd = excluded.TimeEnd, Admin = excluded.Admin")
             record_to_insert = (Channel, CallerIDNum, CallerIDName, ConfbridgeTalking, TimeStart, TimeEnd, Admin)
             cursor.execute(postgres_insert_query, record_to_insert)
 
@@ -117,8 +97,7 @@ def join_participants(BridgeUniqueid,
             print('Database connection closed.')
 
 
-def delete_participants(BridgeUniqueid,
-                        BridgeName,
+def delete_participants(BridgeName,
                         Channel,
                         CallerIDNum,
                         CallerIDName,
@@ -169,7 +148,7 @@ def delete_conference(BridgeUniqueid, BridgeName):
             record_to_insert = (TimeEnd, BridgeUniqueid)
             cursor.execute(postgres_insert_query, record_to_insert)
             print("UPDATE conf_list")
-            delete_conference_record = cursor.execute(f"DELETE FROM conf_list WHERE BridgeUniqueid = '{BridgeUniqueid}' AND state_conference = 'temp' ")
+            cursor.execute(f"DELETE FROM conf_list WHERE BridgeUniqueid = '{BridgeUniqueid}' AND state_conference = 'temp' ")
             print("DELETE FROM conf_list")
 
     except (Exception, psycopg2.DatabaseError) as error:
@@ -178,8 +157,3 @@ def delete_conference(BridgeUniqueid, BridgeName):
         if conn is not None:
             conn.close()
             print('Database connection closed.')
-
-
-
-
-
